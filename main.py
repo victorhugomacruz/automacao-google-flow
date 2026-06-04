@@ -103,26 +103,6 @@ def aguardar_pagina_carregar_e_criar_projeto(driver):
     print("❌ Falha crítica: A automação não conseguiu carregar o site corretamente após várias tentativas.")
     return False
 
-# ==========================================
-# FUNÇÃO SIMPLIFICADA: APENAS CLICAR NO AGENTE
-# ==========================================
-def ativar_agente(driver):
-    print("\nProcurando o botão 'Agente'...")
-    try:
-        # Localiza a div que contém o span com o texto "Agente"
-        xpath_agente = "//div[span[@class='content' and text()='Agente']]"
-        
-        botao_agente = WebDriverWait(driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_agente))
-        )
-        
-        print("✅ Botão 'Agente' encontrado! Clicando nele...")
-        botao_agente.click()
-        time.sleep(2) # Tempo para o site registrar o clique e a janela abrir/atualizar
-            
-    except Exception as e:
-        print("⚠️ Botão 'Agente' não encontrado na tela. A automação continuará normalmente.")
-
 def enviar_prompts(driver, lista_de_prompts):
     print("\nIniciando o envio dos prompts...")
     
@@ -196,13 +176,12 @@ if __name__ == "__main__":
             print("="*50)
             print("1. Vá até a janela do navegador aberta pela automação.")
             print("2. Selecione se você quer Vídeo ou Imagem.")
-            print("3. Escolha o Modelo desejado e configure quantidade se necessário.")
+            print("3. Escolha o Modelo desejado, ative o Agente e configure a quantidade se necessário.")
             print("4. Volte aqui neste terminal e pressione [ENTER] para continuar.")
             input("\nPressione [ENTER] quando estiver pronto...")
             print("="*50 + "\n")
             
             # ---- RETOMADA DA AUTOMAÇÃO ----
-            ativar_agente(driver)
             enviar_prompts(driver, lista_de_prompts)
             
             print("\n✅ Todos os prompts foram enviados para a fila!")
