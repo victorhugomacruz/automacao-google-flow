@@ -123,77 +123,7 @@ def ativar_agente(driver):
     except Exception as e:
         print("⚠️ Botão 'Agente' não encontrado na tela. A automação continuará normalmente.")
 
-def configurar_tipo_e_modelo(driver, tipo_escolhido, modelo_escolhido):
-    """Navega pelos menus para selecionar se é Imagem ou Vídeo e escolhe o modelo correto"""
-    print(f"\n⚙️ Configurando o estúdio para: {tipo_escolhido.upper()} | Modelo: {modelo_escolhido}")
-    
-    try:
-        aba_xpath = f"//button[@role='tab' and contains(., '{tipo_escolhido}')]"
-        try:
-            botao_aba = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, aba_xpath)))
-            
-            estado = botao_aba.get_attribute("data-state")
-            if estado != "active":
-                print(f"Clicando na aba de {tipo_escolhido}...")
-                botao_aba.click()
-                time.sleep(2)
-            else:
-                print(f"Aba de {tipo_escolhido} já estava selecionada.")
-                
-        except:
-            print("Aba direta não encontrada, tentando abrir o menu principal...")
-            botao_menu_principal = driver.find_element(By.XPATH, "//button[@aria-haspopup='menu' and (contains(., 'Vídeo') or contains(., 'Imagem') or contains(., '🍌'))]")
-            botao_menu_principal.click()
-            time.sleep(1)
-            driver.find_element(By.XPATH, aba_xpath).click()
-            time.sleep(2)
-
-        try:
-            print("Configurando quantidade para '1x'...")
-            botao_1x_xpath = "//button[@role='tab' and text()='1x']"
-            botao_1x = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, botao_1x_xpath)))
-            
-            if botao_1x.get_attribute("data-state") != "active":
-                driver.execute_script("arguments[0].click();", botao_1x)
-                print("✅ Opção '1x' selecionada com sucesso!")
-                time.sleep(1)
-            else:
-                print("✅ A opção '1x' já estava selecionada.")
-        except Exception as e:
-            print(f"⚠️ Aviso: Não foi possível definir a opção para '1x'. Ela pode estar oculta.")
-
-        dropdown_modelo_xpath = "//button[@aria-haspopup='menu' and .//i[text()='arrow_drop_down']]"
-        botao_dropdown = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, dropdown_modelo_xpath)))
-        
-        texto_botao_atual = botao_dropdown.text
-        
-        if modelo_escolhido in texto_botao_atual:
-            print(f"✅ O modelo '{modelo_escolhido}' já está selecionado corretamente!")
-        else:
-            print(f"Trocando modelo de '{texto_botao_atual.strip()}' para '{modelo_escolhido}'...")
-            botao_dropdown.click()
-            time.sleep(1)
-            
-            opcao_modelo_xpath = f"//span[contains(text(), '{modelo_escolhido}')]"
-            botao_opcao = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, opcao_modelo_xpath)))
-            botao_opcao.click()
-            time.sleep(1)
-            print(f"✅ Modelo '{modelo_escolhido}' selecionado com sucesso!")
-            
-        try:
-            driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.ESCAPE)
-            time.sleep(1)
-        except:
-            pass
-            
-        return True
-        
-    except Exception as e:
-        print(f"❌ Erro ao tentar configurar a aba/modelo: {type(e).__name__}")
-        print("Continuando mesmo assim, verifique manualmente se está correto.")
-        return False
-
-def enviar_prompts(driver, lista_de_prompts, tipo_escolhido):
+def enviar_prompts(driver, lista_de_prompts):
     print("\nIniciando o envio dos prompts...")
     
     for i, prompt in enumerate(lista_de_prompts):
@@ -248,41 +178,10 @@ def enviar_prompts(driver, lista_de_prompts, tipo_escolhido):
             print(f"❌ Erro ao tentar enviar o prompt. Pulando para o próximo.")
             print(f"Detalhe do erro: {type(e).__name__} - Falha ao interagir com o textbox.")
 
-def menu_interativo():
+if __name__ == "__main__":
     print("="*40)
     print("🤖 AUTOMATIZADOR GOOGLE FLOW")
     print("="*40)
-    print("O que você deseja criar?")
-    print("1 - Vídeos")
-    print("2 - Imagens")
-    
-    escolha_tipo = input("\nDigite a opção (1 ou 2): ").strip()
-    
-    if escolha_tipo == "1":
-        tipo = "Vídeo"
-        modelo = "Veo 3.1 - Lite [Lower Priority]"
-        return tipo, modelo
-        
-    elif escolha_tipo == "2":
-        tipo = "Imagem"
-        print("\nQual modelo de imagem você deseja usar?")
-        print("1 - Nano Banana 2")
-        print("2 - Nano Banana Pro")
-        escolha_modelo = input("Digite a opção (1 ou 2): ").strip()
-        
-        if escolha_modelo == "2":
-            modelo = "Nano Banana Pro"
-        else:
-            modelo = "Nano Banana 2"
-            
-        return tipo, modelo
-        
-    else:
-        print("Opção inválida. Fechando o programa.")
-        exit()
-
-if __name__ == "__main__":
-    tipo_escolhido, modelo_escolhido = menu_interativo()
     
     lista_de_prompts = carregar_prompts()
     
@@ -291,13 +190,20 @@ if __name__ == "__main__":
         
         if aguardar_pagina_carregar_e_criar_projeto(driver):
             
-            # ---- CLIQUE NO AGENTE SIMPLIFICADO AQUI ----
+            # ---- PAUSA MANUAL PARA O USUÁRIO ----
+            print("\n" + "="*50)
+            print("🛑 PAUSA MANUAL - AÇÃO NECESSÁRIA")
+            print("="*50)
+            print("1. Vá até a janela do navegador aberta pela automação.")
+            print("2. Selecione se você quer Vídeo ou Imagem.")
+            print("3. Escolha o Modelo desejado e configure quantidade se necessário.")
+            print("4. Volte aqui neste terminal e pressione [ENTER] para continuar.")
+            input("\nPressione [ENTER] quando estiver pronto...")
+            print("="*50 + "\n")
+            
+            # ---- RETOMADA DA AUTOMAÇÃO ----
             ativar_agente(driver)
-            # --------------------------------------------
-            
-            configurar_tipo_e_modelo(driver, tipo_escolhido, modelo_escolhido)
-            
-            enviar_prompts(driver, lista_de_prompts, tipo_escolhido)
+            enviar_prompts(driver, lista_de_prompts)
             
             print("\n✅ Todos os prompts foram enviados para a fila!")
             input("\nPressione [ENTER] no teclado para fechar o navegador e encerrar a automação...")
