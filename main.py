@@ -6,8 +6,12 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import os
 import time
+import ssl
 import re
 import winreg
+
+# Ignora a verificação de certificados SSL globalmente no script
+ssl._create_default_https_context = ssl._create_unverified_context
 
 def carregar_prompts():
     """Lê o arquivo de texto de forma avançada, ignorando espaços ocultos nas linhas em branco"""
