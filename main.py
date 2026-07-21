@@ -9,7 +9,6 @@ import time
 import ssl
 import re
 import winreg
-import random  # Adicionado para a escolha aleatória de tempo
 
 # Ignora a verificação de certificados SSL globalmente no script
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -111,64 +110,9 @@ def aguardar_pagina_carregar_e_criar_projeto(driver):
 def enviar_prompts(driver, lista_de_prompts):
     print("\nIniciando o envio dos prompts...")
     
-    ultimo_tempo = None # Variável para lembrar qual foi o último segundo escolhido
-    
     for i, prompt in enumerate(lista_de_prompts):
         print(f"\n[{i+1}/{len(lista_de_prompts)}] Processando prompt...")
         
-        # --- INÍCIO DA NOVA LÓGICA DE SELEÇÃO DE TEMPO ---
-        opcoes_tempo = ["4s", "6s", "8s"]
-        
-        # Se houver um tempo anterior, remove ele da lista de opções do sorteio atual
-        if ultimo_tempo in opcoes_tempo:
-            opcoes_tempo.remove(ultimo_tempo)
-            
-        # Sorteia entre as opções restantes e salva como o último tempo usado
-        tempo_escolhido = random.choice(opcoes_tempo)
-        ultimo_tempo = tempo_escolhido 
-        
-        print(f"⏱️ Sorteado vídeo de {tempo_escolhido}. Ajustando configurações...")
-        
-        try:
-            # Encontra o botão principal de Vídeo e rola a tela até ele ficar visível
-            xpath_menu = "//button[@aria-haspopup='menu' and (contains(., 'Vídeo') or contains(., 'Video'))]"
-            botao_menu = WebDriverWait(driver, 5).until(
-                EC.presence_of_element_located((By.XPATH, xpath_menu))
-            )
-            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao_menu)
-            time.sleep(0.5)
-            
-            # Tenta clicar de forma natural primeiro, depois força via Javascript
-            try:
-                botao_menu.click()
-            except:
-                driver.execute_script("arguments[0].click();", botao_menu)
-            
-            time.sleep(1.5) # Aguarda a animação do menu abrir completamente
-            
-            # Localiza a aba correta (4s, 6s ou 8s) dentro do menu aberto
-            xpath_segundos = f"//button[@role='tab' and contains(., '{tempo_escolhido}')]"
-            botao_tempo = WebDriverWait(driver, 5).until(
-                EC.presence_of_element_located((By.XPATH, xpath_segundos))
-            )
-            
-            # Clica no tempo escolhido
-            try:
-                botao_tempo.click()
-            except:
-                driver.execute_script("arguments[0].click();", botao_tempo)
-                
-            time.sleep(1)
-            
-            # Fecha o menu de forma nativa usando a tecla ESCAPE
-            ActionChains(driver).send_keys(Keys.ESCAPE).perform()
-            time.sleep(0.5)
-            print(f"✅ Tempo configurado com sucesso para {tempo_escolhido}!")
-            
-        except Exception as e:
-            print(f"⚠️ Falha ao alterar o tempo (Erro: {type(e).__name__}). Prosseguindo com o tempo padrão...")
-        # --- FIM DA NOVA LÓGICA DE SELEÇÃO DE TEMPO ---
-
         try:
             caixa_texto = WebDriverWait(driver, 15).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "[role='textbox']"))
@@ -205,6 +149,7 @@ def enviar_prompts(driver, lista_de_prompts):
                 botao_enviar = driver.find_element(By.XPATH, "//button[contains(@aria-label, 'Send') or contains(@aria-label, 'Enviar') or @type='submit']")
                 driver.execute_script("arguments[0].click();", botao_enviar)
             
+            # Lógica de tempo contínua: apenas os 7 segundos entre envios
             print("✅ Prompt inserido e enviado! Aguardando 7 segundos...")
             time.sleep(7)
             
